@@ -54,9 +54,20 @@ app.get("/", async (req, res) => {
     .map((m) => `<li><b>${escape(m.author)}</b>: ${escape(m.text)} <small>(${m.created_at})</small></li>`)
     .join("")
 
+  // Challenge: ask the backend how many messages exist in total
+  let total = "?"
+  try {
+    const statsResponse = await fetch(`${backendUrl}/api/stats`)
+    if (statsResponse.ok) total = (await statsResponse.json()).total_messages
+    else console.error(`The backend answered ${statsResponse.status} on /api/stats`)
+  } catch (err) {
+    console.error(`Could not get the stats from ${backendUrl}:`, err.message)
+  }
+
   res.send(page(`
     <h1>🖥️ Three-Stackerino Message Board</h1>
     <p>Frontend ✅ → Backend ✅ → Database ✅</p>
+    <p><b>Total messages: ${escape(total)}</b></p>
     <form method="POST" action="/messages" style="background: #eef; padding: 16px; border-radius: 8px;">
       <input name="author" placeholder="Your name" maxlength="50" required>
       <input name="text" placeholder="Write a message" maxlength="280" required size="35">
